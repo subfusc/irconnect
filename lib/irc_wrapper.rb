@@ -20,6 +20,12 @@ class IRCWrapper
     send("NICK #{name}")
   end
 
+  # host and server are typically ignored by servers
+  # for security reasons
+  def user(nick, host, server, full_name)
+    send("USER #{nick} #{host} #{server} :#{full_name}")
+  end
+  
   private
 
   def send(cmd)
