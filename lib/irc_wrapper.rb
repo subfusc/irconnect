@@ -15,4 +15,16 @@ class IRCWrapper
     @nick       = options[:nick]
     @socket     = options[:socket_class].new(@server, @port)
   end
+
+  def nick(name)
+    send("NICK #{name}")
+  end
+
+  private
+
+  def send(cmd)
+    @socket.print("#{cmd}\r\n")
+  rescue IOError
+    raise
+  end
 end

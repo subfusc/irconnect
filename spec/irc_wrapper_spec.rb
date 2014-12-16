@@ -11,4 +11,9 @@ describe 'IRCWrapper' do
     expect(@connection.nil?).to be(false)
     expect(@connection).to be_a(IRCWrapper)
   end
+
+  it 'sets a nick' do
+    expect { @connection.nick('fakename') }.to_not raise_error
+    expect(@connection.socket.client_output).to eq("NICK fakename\r\n")
+  end
 end
