@@ -7,13 +7,12 @@ class IRCWrapper
   attr_reader :socket, :port, :connected, :nick, :server
   alias_method :connected?, :connected
 
-  def initialize(server, options = Hash.new)
+  def initialize(server, options = {})
     @server     = server
-    
-    options     = DEFAULT_OPTIONS.merge(options)    
+
+    options     = DEFAULT_OPTIONS.merge(options)
     @port       = options[:port]
     @nick       = options[:nick]
     @socket     = options[:socket_class].new(@server, @port)
   end
 end
-
