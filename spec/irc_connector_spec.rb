@@ -30,21 +30,7 @@ describe 'IRCConnector' do
 
     cmd = @connection.receive
 
-    expect(cmd.nil?).to_not be(true)
+    expect(cmd.nil?).to be(false)
     expect(cmd).to be_an_instance_of(IRCCommand)
-    expect(cmd.prefix).to eq('irc.fakenode.net')
-    expect(cmd.command).to eq('001')
-    expect(cmd.params).to eq(['bot', 'Welcome to fakenode IRC bot'])
-    expect(cmd.last_param).to eq('Welcome to fakenode IRC bot')
-
-    @connection.socket.server_responses << 'PING'
-    cmd = @connection.receive
-
-    expect(cmd.nil?).to eq(false)
-    expect(cmd).to be_an_instance_of(IRCCommand)
-    expect(cmd.prefix).to eq(nil)
-    expect(cmd.command).to eq('PING')
-    expect(cmd.params).to eq([])
-    expect(cmd.last_param).to eq(nil)
   end
 end
