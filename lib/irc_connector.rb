@@ -7,6 +7,16 @@ class IRCConnector
 
   attr_reader :socket, :port, :connected, :nick, :server, :command_buffer
 
+  LOGIN_COMMANDS = {
+    '001' => 'RPL_WELCOME',
+    '431' => 'ERR_NONICKNAMEGIVEN',
+    '432' => 'ERR_ERRONEUSNICKNAME',
+    '433' => 'ERR_NICKNAMEINUSE',
+    '436' => 'ERR_NICKCOLLISION',
+    '461' => 'ERR_NEEDMOREPARAMS',
+    '462' => 'ERR_ALREADYREGISTERED'
+  }
+
   def initialize(server, options = {})
     options         = DEFAULT_OPTIONS.merge(options)
     @server         = server
@@ -17,13 +27,23 @@ class IRCConnector
   end
 
   def nick(name)
+    fail 'Invalid NICK' unless
+      name =~ /\A[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]+\z/i
     send("NICK #{name}")
   end
 
   # host and server are typically ignored by servers
   # for security reasons
-  def user(nick, host, server, full_name)
-    send("USER #{nick} #{host} #{server} :#{full_name}")
+  def user(nickname, hostname, servername, fullname)
+    send("USER #{nickname} #{hostname} #{servername} :#{fullname}")
+  end
+
+  def login(nickname, hostname, servername, fullname)
+    nick(nickname)
+    user(nickname, hostname, servername, fullname)
+    reply = receive_until { |c| LOGIN_COMMANDS.include?(c.command) }
+    fail 'Login error, no response from server' if reply.nil?
+    fail "Login error: #{reply.last_param}" unless reply.command == '001'
   end
 
   def receive
