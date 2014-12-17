@@ -26,15 +26,15 @@ class IRCConnector
     send("USER #{nick} #{host} #{server} :#{full_name}")
   end
 
-  def receive_command
-    command = receive
+  def receive
+    command = receive_command
     return nil if command.nil?
     IRCCommand.new(command)
   end
 
   private
 
-  def receive
+  def receive_command
     command = @socket.gets
     command.nil? ? command : command.sub(/\r\n\Z/, '')
   end
