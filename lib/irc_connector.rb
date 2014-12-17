@@ -1,11 +1,11 @@
 require 'socket'
+require './lib/irc_command'
 
 # Simple wrapper around common IRC commands
-class IRCWrapper
-  DEFAULT_OPTIONS = { port: 6667, socket_class: TCPSocket }.freeze
+class IRCConnector
+  DEFAULT_OPTIONS = { port: 6667, socket_class: TCPSocket }
 
   attr_reader :socket, :port, :connected, :nick, :server
-  alias_method :connected?, :connected
 
   def initialize(server, options = {})
     @server     = server
@@ -25,8 +25,19 @@ class IRCWrapper
   def user(nick, host, server, full_name)
     send("USER #{nick} #{host} #{server} :#{full_name}")
   end
-  
+
+  def receive_command
+    command = receive
+    return nil if command.nil?
+    IRCCommand.new(command)
+  end
+
   private
+
+  def receive
+    command = @socket.gets
+    command.nil? ? command : command.sub(/\r\n\Z/, '')
+  end
 
   def send(cmd)
     @socket.print("#{cmd}\r\n")

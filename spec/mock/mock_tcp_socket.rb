@@ -1,6 +1,7 @@
 # phony TCPSocket for testing purposes
 class MockTCPSocket
   attr_reader :client_output
+  attr_accessor :server_responses
 
   def initialize(*)
     @server_responses  = []
