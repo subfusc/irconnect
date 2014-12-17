@@ -28,6 +28,10 @@ describe 'MockTCPSocket' do
       @mock_socket.server_responses << 'Test Message'
       expect(@mock_socket.gets).to eq("Test Message\r\n")
     end
+
+    it 'fails when out of server responses' do
+      expect { @mock_socket.gets }.to raise_error
+    end
   end
 
   describe 'print' do
@@ -39,5 +43,6 @@ describe 'MockTCPSocket' do
       @mock_socket.print('Test Message')
       expect(@mock_socket.client_output).to eq('Test Message')
     end
+
   end
 end
