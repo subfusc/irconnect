@@ -1,4 +1,3 @@
-require 'pry'
 # represents an IRC Command received from the server
 class IRCCommand
   attr_reader :prefix, :command, :params, :last_param
