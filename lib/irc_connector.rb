@@ -17,6 +17,19 @@ class IRCConnector
     '462' => 'ERR_ALREADYREGISTERED'
   }
 
+  JOIN_COMMANDS = {
+    '461' => 'ERR_NEEDMOREPARAMS',
+    '471' => 'ERR_CHANNELISFULL',
+    '473' => 'ERR_INVITEONLYCHAN',
+    '474' => 'ERR_BANNEDFROMCHAN',
+    '475' => 'ERR_BADCHANNELKEY',
+    '476' => 'ERR_BADCHANMASK',
+    '403' => 'ERR_NOSUCHCHANNEL',
+    '405' => 'ERR_TOOMANYCHANNELS',
+    '332' => 'RPL_TOPIC',
+    '353' => 'RPL_NAMREPLY'
+  }
+
   def initialize(server, options = {})
     options         = DEFAULT_OPTIONS.merge(options)
     @server         = server
@@ -44,6 +57,14 @@ class IRCConnector
     reply = receive_until { |c| LOGIN_COMMANDS.include?(c.command) }
     fail 'Login error, no response from server' if reply.nil?
     fail "Login error: #{reply.last_param}" unless reply.command == '001'
+  end
+
+  def join_channel(channel)
+    send("JOIN #{channel}")
+    reply = receive_until { |c| JOIN_COMMANDS.include?(c.command) }
+    fail 'Unable to join channel, unknown error' if reply.nil?
+    success = reply.command == '332' || reply.command == '353'
+    fail "Error joining #{channel}: #{reply.last_param}" unless success
   end
 
   def receive

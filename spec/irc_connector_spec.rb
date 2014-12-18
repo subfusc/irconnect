@@ -158,4 +158,14 @@ describe 'IRCConnector' do
         .to eq("PONG :irc.fakenode.net\r\n")
     end
   end
+
+  describe 'joining channels' do
+    it 'raises an error when attempting to join an invalid channel' do
+      @connection.socket.server_responses <<
+        ":irc.fakenode.net 403 bot imaginary :That channel doesn't exist"
+      expect { @connection.join_channel('imaginary') }
+        .to raise_error(RuntimeError)
+    end
+
+  end
 end
