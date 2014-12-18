@@ -179,7 +179,7 @@ describe 'IRCConnector' do
     it 'sends a message to a channel' do
       @connection.privmsg('#fakechannel', 'Hello, World!')
       expect(@connection.socket.client_output)
-        .to eq("PRIVMSG \#fakechannel Hello, World!\r\n")
+        .to eq("PRIVMSG \#fakechannel :Hello, World!\r\n")
     end
   end
 end

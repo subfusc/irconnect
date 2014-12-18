@@ -56,6 +56,7 @@ class IRCConnector
     nick(nickname)
     user(nickname, hostname, servername, fullname)
     reply = receive_until { |c| LOGIN_COMMANDS.include?(c.command) }
+
     fail 'Login error, no response from server' if reply.nil?
     if reply.command != '001'
       fail "Login error: #{reply.last_param}\n" \
@@ -66,26 +67,28 @@ class IRCConnector
   def join_channel(chan)
     send("JOIN #{chan}")
     reply = receive_until { |c| JOIN_COMMANDS.include?(c.command) }
+
     fail 'Unable to join channel, unknown error' if reply.nil?
-    success = reply.command == '332' || reply.command == '353'
-    unless success
+    unless reply.command == '332' || reply.command == '353'
       fail "Error joining #{chan}: #{reply.last_param} \n" \
         "Received: #{reply.command} -> #{JOIN_COMMANDS[reply.command]}"
     end
   end
 
   def privmsg(target, message)
-    send("PRIVMSG #{target} #{message}")
+    send("PRIVMSG #{target} :#{message}")
   end
 
   def receive
     return command_buffer.shift unless command_buffer.empty?
+
     command = receive_command
     command.nil? ? nil : IRCCommand.new(command)
   end
 
   def receive_until
     skip_commands = []
+
     while (command = receive)
       if yield(command)
         command_buffer.unshift(*skip_commands)
@@ -101,6 +104,7 @@ class IRCConnector
   def receive_command
     command = socket.gets
     return nil if command.nil?
+
     if command =~ /\APING (.*?)\r\n\Z/
       send("PONG #{Regexp.last_match(1)}")
       receive_command
