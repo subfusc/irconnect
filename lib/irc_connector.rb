@@ -40,8 +40,9 @@ class IRCConnector
   end
 
   def nick(name)
-    fail 'Invalid NICK' unless
-      name =~ /\A[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]+\z/i
+    unless name =~ /\A[a-z_\-\[\]\\^{}|`][a-z0-9_\-\[\]\\^{}|`]+\z/i
+      fail 'Invalid NICK'
+    end
     send("NICK #{name}")
   end
 

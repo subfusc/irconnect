@@ -167,5 +167,11 @@ describe 'IRCConnector' do
         .to raise_error(RuntimeError)
     end
 
+    it 'receives a positive response when joining a valid channel' do
+      @connection.socket.server_responses <<
+        ':irc.fakenode.net 332 bot #beer :everyone loves beer!'
+
+      expect { @connection.join_channel('#beer') }.to_not raise_error
+    end
   end
 end

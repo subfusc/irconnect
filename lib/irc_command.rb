@@ -7,16 +7,14 @@ class IRCCommand
   # info on parsing commands:
   # http://goo.gl/N3YGLq
   def initialize(command_string)
-    fail 'Bad IRC command format' unless
-      command_string =~
-      / \A (?::([^\040]+)\040)?                 # prefix
-      ([A-Za-z]+|\d{3})                         # command
-      ((?:\040[^:][^\040]+)*)                   # all but the last param
-      (?:\040:?(.*))?                           # last param
-      \Z /x
-
-    @prefix  = Regexp.last_match(1)
-    @command = Regexp.last_match(2)
+    fail 'Bad IRC command format' unless command_string =~ /
+        \A (?::([^\040]+)\040)?  # prefix
+        ([A-Za-z]+|\d{3})        # command
+        ((?:\040[^:][^\040]+)*)  # all but the last param
+        (?:\040:?(.*))?          # last param
+        \Z
+      /x
+    @prefix, @command = Regexp.last_match(1), Regexp.last_match(2)
     parse_params(Regexp.last_match(3), Regexp.last_match(4))
   end
 
