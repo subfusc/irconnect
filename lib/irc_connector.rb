@@ -57,21 +57,25 @@ class IRCConnector
     user(nickname, hostname, servername, fullname)
     reply = receive_until { |c| LOGIN_COMMANDS.include?(c.command) }
     fail 'Login error, no response from server' if reply.nil?
-    unless reply.command == '001'
+    if reply.command != '001'
       fail "Login error: #{reply.last_param}\n" \
         "Received: #{reply.command} -> #{LOGIN_COMMANDS[reply.command]}"
     end
   end
 
-  def join_channel(channel)
-    send("JOIN #{channel}")
+  def join_channel(chan)
+    send("JOIN #{chan}")
     reply = receive_until { |c| JOIN_COMMANDS.include?(c.command) }
     fail 'Unable to join channel, unknown error' if reply.nil?
     success = reply.command == '332' || reply.command == '353'
     unless success
-      fail "Error joining #{channel}: #{reply.last_param} \n" \
+      fail "Error joining #{chan}: #{reply.last_param} \n" \
         "Received: #{reply.command} -> #{JOIN_COMMANDS[reply.command]}"
     end
+  end
+
+  def privmsg(target, message)
+    send("PRIVMSG #{target} #{message}")
   end
 
   def receive

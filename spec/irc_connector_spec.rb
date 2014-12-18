@@ -174,4 +174,12 @@ describe 'IRCConnector' do
       expect { @connection.join_channel('#beer') }.to_not raise_error
     end
   end
+
+  describe 'sending messages' do
+    it 'sends a message to a channel' do
+      @connection.privmsg('#fakechannel', 'Hello, World!')
+      expect(@connection.socket.client_output)
+        .to eq("PRIVMSG \#fakechannel Hello, World!\r\n")
+    end
+  end
 end
