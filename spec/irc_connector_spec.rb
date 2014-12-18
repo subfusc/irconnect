@@ -32,7 +32,7 @@ describe 'IRCConnector' do
   end
 
   describe 'receiving commands' do
-    it 'receives commands' do
+    it 'receives and parses commands' do
       @connection.socket.server_responses << ':irc.fakenode.net 001 bot ' \
         ':Welcome to fakenode IRC bot'
 
@@ -124,6 +124,38 @@ describe 'IRCConnector' do
         ':irc.fakenode.net 001 bot :Welcome to the fakenode IRC Network bot',
         ':irc.fakenode.net 431 :No nickname given'
       ]
+    end
+  end
+
+  describe 'ping / pong' do
+    it 'responds to server pings with pong to keep connection alive' do
+      commands = [
+        'NOTICE AUTH :*** Looking up your hostname...',
+        'NOTICE AUTH :*** Found your hostname, welcome back',
+        'NOTICE AUTH :*** Checking ident',
+        'NOTICE AUTH :*** No identd (auth) response'
+      ]
+      commands.each do |cmd|
+        @connection.socket.server_responses << "NOTICE AUTH :#{cmd}"
+      end
+
+      response_size = @connection.socket.server_responses.size
+      @connection.socket.server_responses.insert(
+        rand(response_size), 'PING :irc.fakenode.net'
+      )
+
+      commands.each do |c|
+        command = @connection.receive
+        expect(command).to_not be(nil)
+        expect(command).to be_an_instance_of(IRCCommand)
+        expect(command.prefix).to be(nil)
+        expect(command.command).to eq('NOTICE')
+        expect(command.params).to eq(['AUTH', c])
+      end
+
+      expect { @connection.receive }.to raise_error(RuntimeError)
+      expect(@connection.socket.client_output)
+        .to eq("PONG :irc.fakenode.net\r\n")
     end
   end
 end

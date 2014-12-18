@@ -68,7 +68,13 @@ class IRCConnector
 
   def receive_command
     command = socket.gets
-    command.nil? ? nil : command.sub(/\r\n\Z/, '')
+    return nil if command.nil?
+    if command =~ /\APING (.*?)\r\n\Z/
+      send("PONG #{Regexp.last_match(1)}")
+      receive_command
+    else
+      command.sub(/\r\n\Z/, '')
+    end
   end
 
   def send(cmd)
