@@ -1,4 +1,4 @@
-IRCConnector
+irconnect
 ============
 
 Provides basic IRC client functionality.

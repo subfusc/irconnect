@@ -1,15 +1,15 @@
 require 'rspec'
-require './lib/irc_connector.rb'
+require './lib/connection.rb'
 require './spec/mock/mock_tcp_socket.rb'
 
-describe 'IRCConnector' do
+describe 'IRConnect::Connection' do
   before(:each) do
-    @connection = IRCConnector.new('irc.fake.net', socket_class: MockTCPSocket)
+    @connection = IRConnect::Connection.new('irc.fake.net', socket_class: MockTCPSocket)
   end
 
   it 'creates an instance of IRCConnector' do
     expect(@connection.nil?).to be(false)
-    expect(@connection).to be_a(IRCConnector)
+    expect(@connection).to be_a(IRConnect::Connection)
   end
 
   describe 'nick' do
@@ -39,7 +39,7 @@ describe 'IRCConnector' do
       cmd = @connection.receive
 
       expect(cmd.nil?).to be(false)
-      expect(cmd).to be_an_instance_of(IRCCommand)
+      expect(cmd).to be_an_instance_of(IRConnect::Command)
     end
 
     it 'waits for a specific command' do
@@ -63,7 +63,7 @@ describe 'IRCConnector' do
 
       cmd = @connection.receive_until { |c| login_commands.include?(c.command) }
       expect(cmd).to_not be(nil)
-      expect(cmd).to be_an_instance_of(IRCCommand)
+      expect(cmd).to be_an_instance_of(IRConnect::Command)
       expect(cmd.prefix).to eq('irc.fakenode.net')
       expect(cmd.command).to eq('001')
       expect(cmd.params).to eq([
@@ -73,7 +73,7 @@ describe 'IRCConnector' do
 
       cmd = @connection.receive_until { |c| c.last_param.include?('welcome') }
       expect(cmd).to_not be(nil)
-      expect(cmd).to be_an_instance_of(IRCCommand)
+      expect(cmd).to be_an_instance_of(IRConnect::Command)
       expect(cmd.prefix).to be(nil)
       expect(cmd.command).to eq('NOTICE')
       expect(cmd.params).to eq(
@@ -85,7 +85,7 @@ describe 'IRCConnector' do
         'NOTICE AUTH :*** Looking up your hostname...',
         'NOTICE AUTH :*** Checking ident',
         'NOTICE AUTH :*** No identd (auth) response'
-      ].each { |r| expect(@connection.receive).to eq(IRCCommand.new(r)) }
+      ].each { |r| expect(@connection.receive).to eq(IRConnect::Command.new(r)) }
 
       expect { @connection.receive }.to raise_error(RuntimeError)
     end
@@ -112,7 +112,7 @@ describe 'IRCConnector' do
         'NOTICE AUTH :*** Found your hostname, welcome back',
         'NOTICE AUTH :*** Checking ident',
         'NOTICE AUTH :*** No identd (auth) response'
-      ].each { |r| expect(@connection.receive).to eq(IRCCommand.new(r)) }
+      ].each { |r| expect(@connection.receive).to eq(IRConnect::Command.new(r)) }
 
       expect { @connection.receive }.to raise_error(RuntimeError)
 
@@ -147,7 +147,7 @@ describe 'IRCConnector' do
       commands.each do |c|
         command = @connection.receive
         expect(command).to_not be(nil)
-        expect(command).to be_an_instance_of(IRCCommand)
+        expect(command).to be_an_instance_of(IRConnect::Command)
         expect(command.prefix).to be(nil)
         expect(command.command).to eq('NOTICE')
         expect(command.params).to eq(['AUTH', c])
