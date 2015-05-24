@@ -1,5 +1,5 @@
 require 'socket'
-require './lib/command'
+require_relative 'command'
 
 module IRConnect
   # Simple wrapper around common IRC commands

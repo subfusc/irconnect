@@ -1,3 +1,2 @@
-require './lib/command.rb'
-require './lib/connection.rb'
-
+require_relative 'command.rb'
+require_relative 'connection.rb'
