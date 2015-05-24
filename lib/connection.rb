@@ -80,10 +80,10 @@ module IRConnect
       send("PRIVMSG #{target} :#{message}")
     end
 
-    def receive
+    def receive(ignore_ping: true)
       return command_buffer.shift unless command_buffer.empty?
 
-      command = receive_command
+      command = receive_command(ignore_ping: ignore_ping)
       command.nil? ? nil : IRConnect::Command.new(command)
     end
 
@@ -102,15 +102,16 @@ module IRConnect
 
     private
 
-    def receive_command
-      command = socket.gets
-      return nil if command.nil?
+    def receive_command(ignore_ping: true)
+      loop do
+        command = socket.gets
+        return nil if command.nil?
 
-      if command =~ /\APING (.*?)\r\n\Z/
-        send("PONG #{Regexp.last_match(1)}")
-        receive_command
-      else
-        command.sub(/\r\n\Z/, '')
+        if command =~ /\APING (.*?)\r\n\Z/ && ignore_ping
+          send("PONG #{Regexp.last_match(1)}")
+        else
+          return command.sub(/\r\n\Z/, '')
+        end
       end
     end
 
