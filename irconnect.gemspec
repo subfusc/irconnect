@@ -1,7 +1,7 @@
 Gem::Specification.new do |spec|
   spec.name        = 'irconnect'
-  spec.version     = '0.0.1'
-  spec.date        = '2015-01-05'
+  spec.version     = '0.0.32'
+  spec.date        = '2015-05-25'
   spec.summary     = "irconnect"
   spec.description = "Wrapper around basic IRC Client functionality"
   spec.authors     = ["Justin Speers"]
