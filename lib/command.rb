@@ -1,23 +1,43 @@
+# IRC SPESIFICATION
+# <message> ::=
+#     [':' <prefix> <SPACE> ] <command> <params> <crlf>
+# <prefix> ::=
+#     <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+# <command> ::=
+#     <letter> { <letter> } | <number> <number> <number>
+# <SPACE> ::=
+#     ' ' { ' ' }
+# <params> ::=
+#     <SPACE> [ ':' <trailing> | <middle> <params> ]
+# <middle> ::=
+#     <Any *non-empty* sequence of octets not including SPACE or NUL or CR or LF, the first of which may not be ':'>
+# <trailing> ::=
+#     <Any, possibly *empty*, sequence of octets not including NUL or CR or LF>
+# <crlf> ::=
+#     CR LF
 
 module IRConnect
   # represents an IRC Command received from the server
   class Command
-    attr_reader :prefix, :command, :params, :last_param
+    attr_reader :sender, :ident, :host, :prefix, :command, :params, :last_param
 
-    # IRC message format:
-    # :<prefix> <command> <params> :<trailing>
-    # info on parsing commands:
-    # http://goo.gl/N3YGLq
+    @@irc_command_regex = %r{
+      \A (:(?<prefix>                                          # Start Prefix group
+      (?<sender>[^!@\s]+)(!(?<ident>[^@\s]+))?(@(?<host>\S+))? # server | nick!user@host
+      )\s)?                                                    # SPACE, End Prefix group
+      (?<command>[A-Za-z]+|\d{3})                              # Command group
+      \s                                                       # Separating space
+      (?<params>[^\n\r]+)                                      # Get all params
+      \Z
+    }x
+
     def initialize(command_string)
-      fail 'Bad IRC command format' unless command_string =~ /
-          \A (?::([^\040]+)\040)?  # prefix
-          ([A-Za-z]+|\d{3})        # command
-          ((?:\040[^:][^\040]+)*)  # all but the last param
-          (?:\040:?(.*))?          # last param
-          \Z
-        /x
-      @prefix, @command = Regexp.last_match(1), Regexp.last_match(2)
-      parse_params(Regexp.last_match(3), Regexp.last_match(4))
+      match = @@irc_command_regex.match(command_string)
+      fail 'Bad IRC command format' unless match
+
+      @prefix, @command = match['prefix'], match['command']
+      @sender, @ident, @host = match['sender'], match['ident'], match['host']
+      parse_params(match['params'])
     end
 
     def ==(other)
@@ -28,14 +48,9 @@ module IRConnect
 
     private
 
-    def parse_params(param, param_last)
-      if param.empty?
-        @params = []
-      else
-        @params = param.split
-        @params << param_last unless param_last.nil?
-      end
-      @last_param = params.last
+    def parse_params(params)
+      @params = params.split(' :')
+      @last_param = @params.last
     end
   end
 end
