@@ -1,33 +1,32 @@
-# IRC SPESIFICATION
-# <message> ::=
-#     [':' <prefix> <SPACE> ] <command> <params> <crlf>
-# <prefix> ::=
-#     <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
-# <command> ::=
-#     <letter> { <letter> } | <number> <number> <number>
-# <SPACE> ::=
-#     ' ' { ' ' }
-# <params> ::=
-#     <SPACE> [ ':' <trailing> | <middle> <params> ]
-# <middle> ::=
-#     <Any *non-empty* sequence of octets not including SPACE or NUL or CR or LF, the first of which may not be ':'>
-# <trailing> ::=
-#     <Any, possibly *empty*, sequence of octets not including NUL or CR or LF>
-# <crlf> ::=
-#     CR LF
-
 module IRConnect
   # represents an IRC Command received from the server
   class Command
     attr_reader :sender, :ident, :host, :prefix, :command, :params, :last_param
 
+    # IRC SPESIFICATION
+    # <message> ::=
+    #     [':' <prefix> <SPACE> ] <command> <params> <crlf>
+    # <prefix> ::=
+    #     <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+    # <command> ::=
+    #     <letter> { <letter> } | <number> <number> <number>
+    # <SPACE> ::=
+    #     ' ' { ' ' }
+    # <params> ::=
+    #     <SPACE> [ ':' <trailing> | <middle> <params> ]
+    # <middle> ::=
+    #     <Any *non-empty* sequence of octets not including SPACE or NUL or CR or LF, the first of which may not be ':'>
+    # <trailing> ::=
+    #     <Any, possibly *empty*, sequence of octets not including NUL or CR or LF>
+    # <crlf> ::=
+    #     CR LF
     @@irc_command_regex = %r{
-      \A (:(?<prefix>                                          # Start Prefix group
-      (?<sender>[^!@\s]+)(!(?<ident>[^@\s]+))?(@(?<host>\S+))? # server | nick!user@host
-      )\s)?                                                    # SPACE, End Prefix group
-      (?<command>[A-Za-z]+|\d{3})                              # Command group
-      \s                                                       # Separating space
-      (?<params>[^\n\r]+)                                      # Get all params
+      \A(:(?<prefix>                                              # Start Prefix group
+      (?<sender>[^!@\s]+?)(!(?<ident>[^@\s]+?))?(@(?<host>\S+?))? # server | nick!user@host
+      )\s)?                                                       # SPACE, End Prefix group
+      (?<command>[A-Za-z]+|\d{3})                                 # Command group
+      \s                                                          # Separating space
+      (?<params>[^\n\r]+)                                         # Get all params
       \Z
     }x
 
